@@ -2,6 +2,10 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import "./App.css";
 
+// 👉 Render backend URL
+const BASE_URL = "https://notes-app-r4so.onrender.com";
+
+
 function App() {
   const [notes, setNotes] = useState([]);
   const [filteredNotes, setFilteredNotes] = useState([]);
@@ -10,37 +14,55 @@ function App() {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
 
+  // Fetch all notes
   const fetchNotes = async () => {
-    setLoading(true);
-    const res = await axios.get("http://localhost:5000/notes");
-    setNotes(res.data);
-    setFilteredNotes(res.data);
-    setLoading(false);
+    try {
+      setLoading(true);
+      const res = await axios.get(`${BASE_URL}/notes`);
+      setNotes(res.data);
+      setFilteredNotes(res.data);
+    } catch (err) {
+      console.error("Error fetching notes:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
+  // Add a note
   const addNote = async () => {
     if (!title || !content) return;
 
-    await axios.post("http://localhost:5000/notes/add", {
-      title,
-      content
-    });
+    try {
+      await axios.post(`${BASE_URL}/notes/add`, {
+        title,
+        content
+      });
 
-    setTitle("");
-    setContent("");
-    fetchNotes();
+      setTitle("");
+      setContent("");
+      fetchNotes();
+    } catch (err) {
+      console.error("Error adding note:", err);
+    }
   };
 
+  // Delete a note
   const deleteNote = async (id) => {
-    await axios.delete(`http://localhost:5000/notes/${id}`);
-    fetchNotes();
+    try {
+      await axios.delete(`${BASE_URL}/notes/${id}`);
+      fetchNotes();
+    } catch (err) {
+      console.error("Error deleting note:", err);
+    }
   };
 
+  // Search notes
   const handleSearch = (value) => {
     setSearch(value);
-    const filtered = notes.filter(note =>
-      note.title.toLowerCase().includes(value.toLowerCase()) ||
-      note.content.toLowerCase().includes(value.toLowerCase())
+    const filtered = notes.filter(
+      (note) =>
+        note.title.toLowerCase().includes(value.toLowerCase()) ||
+        note.content.toLowerCase().includes(value.toLowerCase())
     );
     setFilteredNotes(filtered);
   };
